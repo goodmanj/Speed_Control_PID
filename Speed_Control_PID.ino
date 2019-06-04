@@ -6,12 +6,12 @@
 
 #include <math.h>;
 #include <Wire.h>
-#include <LiquidCrystal.h>
+#include <Adafruit_LiquidCrystal.h>
 #include <Adafruit_MCP4725.h>
 #include <PID_v1.h>
 
 // LCD setup: Connect via i2c, default address #0 (A0-A2 not jumpered)
-LiquidCrystal lcd(0);
+Adafruit_LiquidCrystal lcd(0);
 
 //RPM sensor interrupt pin
 const int encoderPin = 2;
@@ -174,4 +174,3 @@ void print_rpm()
          lcd.setCursor(12,1);
          lcd.print(Setpoint_RPM); 
 }
-
