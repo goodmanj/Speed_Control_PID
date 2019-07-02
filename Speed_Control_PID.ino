@@ -1,10 +1,14 @@
+
+
+
 /* Rotating Tank Speed Controller
  *  
  * Written by Sebastian Viasus, Summer 2015
  * Modified by Jason Goodman, Summer 2018
+ * Calibration values by David Frey, summer 2019
  */
 
-#include <math.h>;
+#include <math.h>
 #include <Wire.h>
 #include <Adafruit_LiquidCrystal.h>
 #include <Adafruit_MCP4725.h>
@@ -20,12 +24,13 @@ const int encoderPin = 2;
 const float calibration_factor = 1.0;  // Adjust this to fine-tune RPM
 const int pulses_per_revolution = 32; // How many counts for a full circle of rotation?
 const float radius_of_sensorwheel = 1.9;
-const float distance_from_table_center = 13.8;
+const float distance_from_table_center = 13.8;//distance from center on table 1&2
+//const float distance_from_table_center = 13.25;//distance from center on table 3
 const float pulses_per_tablerotation = pulses_per_revolution * distance_from_table_center / radius_of_sensorwheel;
 
 // Timer variables
 volatile float average_rpm = 0.0;  // Current RPM value
-const float weight = 0.2;  // Weight of new data in autoregressive moving average
+const float weight = 0.1;  // Weight of new data in autoregressive moving average
 unsigned long delta_t;
 unsigned long time = 0;
 float set_rpm = 0.00; // The target value that you want the RPM to be
@@ -41,7 +46,9 @@ Adafruit_MCP4725 dac;
 #define MAXRPM 20
 
 uint32_t voltage = 0;  // Initial voltage 
-const int v_offset = 1400;  // Zero point offset for voltage control
+const int v_offset = 13600;  // Zero point offset for voltage control on table 1
+//const int v_offset = 14000;  // Zero point offset for voltage control on table 2 // Check these!
+//const int v_offset = 13500;  // Zero point offset for voltage control on table 3 // Check these!
 
 #define BASE_STEP .02
 float step = BASE_STEP;  // Buttonpress step size, RPM
@@ -50,7 +57,9 @@ float step = BASE_STEP;  // Buttonpress step size, RPM
 double Setpoint_RPM;
 double Input_RPM;
 double Output_voltage;
-PID myPID(&Input_RPM, &Output_voltage, &Setpoint_RPM,200,100,0,DIRECT);
+
+PID myPID(&Input_RPM, &Output_voltage, &Setpoint_RPM,20,25,0,DIRECT); // Recalibrated, slow response but no overshoot
+// PID myPID(&Input_RPM, &Output_voltage, &Setpoint_RPM,20,25,0,DIRECT); // Put any other calibrations here
 
 
 /*-----------------------SETUP---------------------------*/
@@ -124,12 +133,19 @@ void loop() {
   //Prints rpm
   print_rpm();
   delay(50);   
+// Human-readable format
     Serial.print("voltage = ");
     Serial.print(Output_voltage);
     Serial.print(", Set RPM = ");
     Serial.print(Setpoint_RPM);
     Serial.print(", True RPM = ");
     Serial.println(average_rpm);
+// CSV format
+/*    Serial.print(Output_voltage);
+    Serial.print(",");
+    Serial.print(Setpoint_RPM);
+    Serial.print(",");
+    Serial.println(average_rpm);*/
 }
 
 
